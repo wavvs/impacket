@@ -2461,6 +2461,7 @@ class SMBCommands:
                                                             authenticateMessage['user_name'],
                                                             authenticateMessage['domain_name'],
                                                             authenticateMessage['lanman'], authenticateMessage['ntlm'])
+                        connData['NtlmHashData'] = ntlm_hash_data['hash_string']
                         smbServer.log(ntlm_hash_data['hash_string'])
                         if jtr_dump_path is not '':
                             writeJohnOutputToFile(ntlm_hash_data['hash_string'], ntlm_hash_data['hash_version'], jtr_dump_path)
@@ -2497,6 +2498,7 @@ class SMBCommands:
             try:
                 jtr_dump_path = smbServer.getJTRdumpPath()
                 ntlm_hash_data = outputToJohnFormat( b'', sessionSetupData['Account'], sessionSetupData['PrimaryDomain'], sessionSetupData['AnsiPwd'], sessionSetupData['UnicodePwd'] )
+                connData['NtlmHashData'] = ntlm_hash_data['hash_string']
                 smbServer.log(ntlm_hash_data['hash_string'])
                 if jtr_dump_path is not '':
                     writeJohnOutputToFile(ntlm_hash_data['hash_string'], ntlm_hash_data['hash_version'], jtr_dump_path)
@@ -2839,6 +2841,8 @@ class SMB2Commands:
                                                         authenticateMessage['user_name'],
                                                         authenticateMessage['domain_name'],
                                                         authenticateMessage['lanman'], authenticateMessage['ntlm'])
+                    
+                    connData['NtlmHashData'] = ntlm_hash_data['hash_string']
                     smbServer.log(ntlm_hash_data['hash_string'])
                     if jtr_dump_path is not '':
                         writeJohnOutputToFile(ntlm_hash_data['hash_string'], ntlm_hash_data['hash_version'],
@@ -2872,7 +2876,6 @@ class SMB2Commands:
     @staticmethod
     def smb2TreeConnect(connId, smbServer, recvPacket):
         connData = smbServer.getConnectionData(connId)
-
         respPacket = smb2.SMB2Packet()
         respPacket['Flags']     = smb2.SMB2_FLAGS_SERVER_TO_REDIR
         respPacket['Status']    = STATUS_SUCCESS
@@ -4293,7 +4296,7 @@ smb.SMB.TRANS_TRANSACT_NMPIPE          :self.__smbTransHandler.transactNamedPipe
         #    packet['ErrorClass']  = errorCode & 0xff
         #    return [packet]
 
-        self.setConnectionData(connId, connData)    
+        self.setConnectionData(connId, connData)
 
         packetsToSend = []
         for packetNum in range(len(compoundedPacketsResponse)):
@@ -4377,7 +4380,6 @@ smb.SMB.TRANS_TRANSACT_NMPIPE          :self.__smbTransHandler.transactNamedPipe
 
         # We clear the compound requests
         connData['LastRequest'] = {}
-
         return packetsToSend
 
     def processConfigFile(self, configFile = None):
